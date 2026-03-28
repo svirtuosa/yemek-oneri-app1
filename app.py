@@ -62,3 +62,13 @@ elif ogun == "akşam":
 # ---------------- TATLI ----------------
 else:
     st.success("🍫 Fit tiramisu / Fit brownie / Fit cheesecake / Fit magnolia / Hurmalı trüf")
+
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    url("https://raw.githubusercontent.com/KULLANICI_ADIN/yemek-oneri-app1/main/bg.png");
+    background-size: cover;
+}
+</style>
+""", unsafe_allow_html=True)
