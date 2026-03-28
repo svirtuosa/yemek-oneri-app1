@@ -1,21 +1,24 @@
 import streamlit as st
 import random
 
-st.set_page_config(page_title="Yemek Öneri", page_icon="🍽️")
+st.set_page_config(page_title="Yemek Öneri", layout="wide")
 
-# ----------- STİL -----------
+# ----------- ARKA PLAN -----------
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-    url("https://raw.githubusercontent.com/svirtuosa/yemek-oneri-app1/main/bg.PNG");
+    background-image: url("https://images.unsplash.com/photo-1490818387583-1baba5e638af");
     background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
-.card {
-    padding: 10px;
-    border-radius: 12px;
-    background: white;
-    text-align: center;
+
+/* içerik okunabilirliği */
+.block-container {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 2rem;
+    border-radius: 15px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -28,58 +31,118 @@ st.divider()
 
 # ----------- SORULAR -----------
 ogun = st.selectbox("Öğün:", ["kahvaltı", "öğle", "akşam", "tatlı"])
-amac = st.selectbox("Amaç:", ["hızlı", "sağlıklı", "kilo verme", "keyif"])
-sure = st.selectbox("Süre:", ["5 dk", "15 dk", "30+ dk"])
-tat = st.selectbox("Tat:", ["tatlı", "tuzlu", "hafif"])
-doyurucu = st.selectbox("Doyuruculuk:", ["hafif", "orta", "ağır"])
-protein = st.selectbox("Protein:", ["evet", "hayır", "fark etmez"])
-malzeme = st.selectbox("Malzeme:", ["temel", "sebze", "et/tavuk"])
+
+amac = st.selectbox("Amacın ne?", [
+    "hızlıca yemek",
+    "sağlıklı beslenmek",
+    "kilo vermek",
+    "keyif yapmak"
+])
+
+sure = st.selectbox("Ne kadar vaktin var?", [
+    "5 dk",
+    "15 dk",
+    "30+ dk"
+])
+
+tat = st.selectbox("Tat tercihi:", ["tatlı", "tuzlu", "hafif"])
+
+doyurucu = st.selectbox("Ne kadar doyurucu olsun?", [
+    "hafif",
+    "orta",
+    "çok doyurucu"
+])
+
+protein = st.selectbox("Protein ister misin?", [
+    "evet",
+    "hayır",
+    "fark etmez"
+])
+
+malzeme = st.selectbox("Evde ne var?", [
+    "temel şeyler",
+    "sebze var",
+    "et/tavuk var"
+])
+
+mutfak = st.selectbox("Mutfak tercihi:", [
+    "Türk mutfağı",
+    "dünya mutfağı",
+    "fark etmez"
+])
 
 st.divider()
 
-# ----------- YEMEK + GÖRSEL DB -----------
+# ----------- YEMEK HAVUZU -----------
 
-yemekler = [
-    {"ad": "🥞 Pankek", "kategori": "kahvaltı", "img": "https://images.unsplash.com/photo-1587738347117-7c8f3b8e2f63"},
-    {"ad": "🍳 Omlet", "kategori": "kahvaltı", "img": "https://images.unsplash.com/photo-1559622214-f8a9850965bb"},
-    {"ad": "🍅 Menemen", "kategori": "kahvaltı", "img": "https://images.unsplash.com/photo-1604908176997-4311c7c4b0f3"},
-    {"ad": "🥪 Sandviç", "kategori": "öğle", "img": "https://images.unsplash.com/photo-1550317138-10000687a72b"},
-    {"ad": "🌯 Wrap", "kategori": "öğle", "img": "https://images.unsplash.com/photo-1604908177522-4027c9d9e8c7"},
-    {"ad": "🍝 Makarna", "kategori": "öğle", "img": "https://images.unsplash.com/photo-1521389508051-d7ffb5dc8c4f"},
-    {"ad": "🥗 Salata", "kategori": "hafif", "img": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"},
-    {"ad": "🍗 Tavuk", "kategori": "protein", "img": "https://images.unsplash.com/photo-1604908554165-0f8a6f7d9f5f"},
-    {"ad": "🍖 Et", "kategori": "protein", "img": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092"},
-    {"ad": "🍔 Burger", "kategori": "keyif", "img": "https://images.unsplash.com/photo-1550547660-d9450f859349"},
-    {"ad": "🍕 Pizza", "kategori": "keyif", "img": "https://images.unsplash.com/photo-1548365328-8b849f13c0c5"},
-    {"ad": "🍫 Brownie", "kategori": "tatlı", "img": "https://images.unsplash.com/photo-1606312619070-d48b4c652a52"},
-    {"ad": "🍰 Cheesecake", "kategori": "tatlı", "img": "https://images.unsplash.com/photo-1563805042-7684c019e1cb"},
-]
+yemekler = {
+    "kahvaltı": {
+        "tatlı": ["🥞 Pankek", "🥣 Yulaf", "🍯 Bal + kaymak", "🍌 Smoothie bowl"],
+        "tuzlu": ["🍳 Omlet", "🍅 Menemen", "🧀 Peynir tabağı", "🥪 Tost"],
+        "hafif": ["🥗 Yoğurt + meyve", "🥛 Kefir", "🍎 Meyve tabağı"]
+    },
+    "öğle": {
+        "hızlıca yemek": ["🥪 Sandviç", "🌯 Wrap", "🍝 Makarna"],
+        "sağlıklı beslenmek": ["🥗 Tavuk salata", "🥦 Sebze yemeği", "🍚 Bulgur + yoğurt"],
+        "kilo vermek": ["🥗 Yeşil salata", "🥒 Zeytinyağlı sebze"],
+        "keyif yapmak": ["🍔 Burger", "🍕 Pizza", "🍝 Makarna"]
+    },
+    "akşam": {
+        "hafif": ["🥗 Salata", "🥦 Sebze yemeği", "🍲 Çorba"],
+        "orta": ["🍝 Makarna", "🍛 Tavuk sote", "🍲 Çorba + ana yemek"],
+        "çok doyurucu": ["🍖 Et yemeği", "🍗 Tavuk + pilav", "🍲 Güveç"]
+    },
+    "tatlı": [
+        "🍫 Fit brownie",
+        "🍰 Fit cheesecake",
+        "🍯 Fit baklava",
+        "🍌 Muzlu pankek",
+        "🍓 Yoğurtlu tatlı"
+    ]
+}
 
-# ----------- FİLTRE -----------
+# ----------- ÖNERİ MOTORU -----------
 
-filtreli = []
+oneriler = []
 
-for y in yemekler:
-    if ogun == "tatlı" and y["kategori"] == "tatlı":
-        filtreli.append(y)
-    elif ogun == "kahvaltı" and y["kategori"] == "kahvaltı":
-        filtreli.append(y)
-    elif ogun == "öğle" and y["kategori"] in ["öğle", "hafif"]:
-        filtreli.append(y)
-    elif ogun == "akşam" and y["kategori"] in ["protein", "hafif"]:
-        filtreli.append(y)
+if ogun == "kahvaltı":
+    oneriler = yemekler["kahvaltı"].get(tat, [])
+
+elif ogun == "öğle":
+    oneriler = yemekler["öğle"].get(amac, [])
+
+elif ogun == "akşam":
+    oneriler = yemekler["akşam"].get(doyurucu, [])
+
+elif ogun == "tatlı":
+    oneriler = yemekler["tatlı"]
+
+# ----------- EK FİLTRELER -----------
+
+if protein == "evet":
+    oneriler += ["🍗 Tavuk", "🥚 Yumurta", "🥩 Et"]
+
+if sure == "5 dk":
+    oneriler = oneriler[:3]
+
+if malzeme == "temel şeyler":
+    oneriler = [y for y in oneriler if "Et" not in y and "Tavuk" not in y]
 
 # ----------- SONUÇ -----------
 
-if filtreli:
-    secim = random.choice(filtreli)
+if oneriler:
+    secim = random.choice(oneriler)
+    st.success(f"👉 Sana önerim: {secim}")
 
-    st.image(secim["img"], use_column_width=True)
-    st.markdown(f"<div class='card'>{secim['ad']}</div>", unsafe_allow_html=True)
+# ----------- RANDOM BUTON -----------
 
-# ----------- RANDOM -----------
+if st.button("🎲 Kararsızım, bana seç"):
+    tum = []
+    for k in yemekler:
+        if isinstance(yemekler[k], dict):
+            for alt in yemekler[k].values():
+                tum.extend(alt)
+        else:
+            tum.extend(yemekler[k])
 
-if st.button("🎲 Rastgele"):
-    secim = random.choice(yemekler)
-    st.image(secim["img"], use_column_width=True)
-    st.markdown(f"<div class='card'>{secim['ad']}</div>", unsafe_allow_html=True)
+    st.success(f"👉 Rastgele: {random.choice(tum)}")
