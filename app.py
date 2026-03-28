@@ -4,7 +4,7 @@ st.markdown("""
 <style>
 .stApp {
     background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-    url("https://raw.githubusercontent.com/svirtuosa/yemek-oneri-app1/main/bg.png");
+    url("https://raw.githubusercontent.com/svirtuosa/yemek-oneri-app1/main/bg.PNG");
     background-size: cover;
 }
 </style>
