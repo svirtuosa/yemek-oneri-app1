@@ -3,7 +3,7 @@ import base64
 import os
 import random
 
-st.set_page_config(page_title="🍽️ Chef-Level Yemek Önerici", layout="centered")
+st.set_page_config(page_title="🍽️ AI Yemek Önerici", layout="centered")
 
 # -----------------------------
 # BACKGROUND
@@ -62,7 +62,7 @@ questions = [
 ]
 
 # -----------------------------
-# DEVASA YEMEK HAVUZU
+# YEMEK HAVUZU
 # -----------------------------
 meals = [
     {"name": "Tavuk Sote", "category": "tavuk", "time": "15-30 dk", "cal": 400, "tags": ["protein","pratik"]},
@@ -72,116 +72,101 @@ meals = [
     {"name": "Omlet", "category": "kahvalti", "time": "<15 dk", "cal": 280, "tags": ["protein"]},
     {"name": "Yulaf Bowl", "category": "kahvalti", "time": "<15 dk", "cal": 250, "tags": ["hafif"]},
     {"name": "Somon Izgara", "category": "balik", "time": "15-30 dk", "cal": 500, "tags": ["protein"]},
+    {"name": "Pizza", "category": "fastfood", "time": "30+ dk", "cal": 800, "tags": ["kaçamak"]},
 ]
 
 # -----------------------------
-# SKOR SİSTEMİ (DAHA AKILLI)
+# GELİŞMİŞ SKOR
 # -----------------------------
-def score(meal, a):
-    s = 0
+def advanced_score(meal, a):
 
-    if "Tavuk" in a["Beslenme tercihin?"] and meal["category"] == "tavuk":
-        s += 5
-    if "Et ağırlıklı" in a["Beslenme tercihin?"] and meal["category"] == "et":
-        s += 5
+    score = 0
 
+    # HARD FILTER
+    if a["Ne kadar zamanın var?"] == "<15 dk" and meal["time"] == "30+ dk":
+        return -999
+
+    if "Vegan" in a["Beslenme tercihin?"] and meal["category"] in ["et", "tavuk"]:
+        return -999
+
+    # BESLENME
+    if meal["category"] == "tavuk" and "Tavuk" in a["Beslenme tercihin?"]:
+        score += 5
+
+    if meal["category"] == "et" and "Et ağırlıklı" in a["Beslenme tercihin?"]:
+        score += 5
+
+    # SÜRE
     if meal["time"] == a["Ne kadar zamanın var?"]:
-        s += 3
+        score += 3
 
-    for t in a["Nasıl bir yemek?"]:
-        if t.lower() in meal["tags"]:
-            s += 2
+    # TARZ
+    for pref in a["Nasıl bir yemek?"]:
+        if pref.lower() in meal["tags"]:
+            score += 2
 
-    return s
+    # MALZEME
+    for ing in a["Evde ne var?"]:
+        if ing.lower() in meal["name"].lower():
+            score += 2
+
+    # UĞRAŞ
+    if a["Uğraş seviyesi?"] == "Pratik" and meal["time"] == "<15 dk":
+        score += 2
+
+    return score
 
 # -----------------------------
-# CHEF-LEVEL TARİF MOTORU
+# DIVERSITY
+# -----------------------------
+def pick_diverse(scored_list):
+    selected = []
+    used = set()
+
+    for meal, sc in scored_list:
+        if meal["category"] not in used:
+            selected.append(meal)
+            used.add(meal["category"])
+
+        if len(selected) == 3:
+            break
+
+    return selected
+
+# -----------------------------
+# TARİF MOTORU
 # -----------------------------
 def generate_recipe(meal):
-
-    base_oils = ["zeytinyağı", "tereyağı"]
-    spices = ["karabiber", "kekik", "pul biber"]
-
-    oil = random.choice(base_oils)
 
     if meal["category"] == "tavuk":
         return f"""
 ### 🍽️ {meal['name']}
 
-**Açıklama:** Dengeli ve yüksek proteinli tavuk yemeği
-
 **Malzemeler:**
-- 300g tavuk göğsü
-- 1 adet soğan
-- 1 adet biber
-- 2 yemek kaşığı {oil}
-- {", ".join(spices)}
+- 300g tavuk
+- soğan
+- biber
+- zeytinyağı
 
 **Yapılışı:**
-1. Tavukları eşit boyutta doğra  
-2. Tavayı yüksek ateşte ısıt  
-3. Tavukları mühürle (renk alana kadar)  
-4. Sebzeleri ekle  
-5. Orta ateşte pişir  
-
-**İpucu:**
-Tavuğu fazla karıştırma → su salar
+Tavukları yüksek ateşte pişir, sebzeleri ekle.
 """
 
-    elif meal["category"] == "makarna":
+    if meal["category"] == "makarna":
         return f"""
 ### 🍝 {meal['name']}
 
-**Malzemeler:**
-- 100g makarna
-- 1 bardak domates sosu
-- 1 yemek kaşığı {oil}
-
-**Yapılışı:**
-1. Makarnayı tuzlu suda haşla  
-2. Sosu tavada ısıt  
-3. Makarnayı ekleyip karıştır  
-
-**İpucu:**
-Makarnayı az diri bırak (al dente)
+Makarnayı haşla ve sosla karıştır.
 """
 
-    elif meal["category"] == "salata":
+    if meal["category"] == "salata":
         return f"""
 ### 🥗 {meal['name']}
 
-**Malzemeler:**
-- Marul
-- Domates
-- Salatalık
-- {oil}
-- Limon
-
-**Yapılışı:**
-Doğra, karıştır, servis et
-
-**İpucu:**
-Sosu en son ekle
+Sebzeleri doğra ve karıştır.
 """
 
-    elif meal["category"] == "kahvalti":
-        return f"""
-### 🍳 {meal['name']}
-
-**Malzemeler:**
-- 2 yumurta
-- 1 tatlı kaşığı {oil}
-- Tuz
-
-**Yapılışı:**
-Tavada pişir
-
-**İpucu:**
-Orta ateş kullan
-"""
-
-    else:
-        return f"""
+    return f"""
 ### 🍽️ {meal['name']}
 
 Pratik bir yemek.
@@ -190,7 +175,7 @@ Pratik bir yemek.
 # -----------------------------
 # UI
 # -----------------------------
-st.title("🍽️ Chef-Level Yemek Önerici")
+st.title("🍽️ AI Yemek Önerici")
 
 if st.session_state.step < len(questions):
     q, typ, opts = questions[st.session_state.step]
@@ -215,9 +200,13 @@ if st.session_state.step < len(questions):
 # -----------------------------
 if st.session_state.step >= len(questions):
 
-    scored = sorted(meals, key=lambda m: score(m, st.session_state.answers), reverse=True)
+    scored = [(m, advanced_score(m, st.session_state.answers)) for m in meals]
+    scored = [x for x in scored if x[1] > 0]
+    scored.sort(key=lambda x: x[1], reverse=True)
 
-    main, alt1, alt2 = scored[0], scored[1], scored[2]
+    selected = pick_diverse(scored)
+
+    main, alt1, alt2 = selected[0], selected[1], selected[2]
 
     st.markdown("## 🎯 Ana Öneri")
     st.markdown(f"<div class='card'>{generate_recipe(main)}</div>", unsafe_allow_html=True)
