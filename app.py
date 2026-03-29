@@ -9,46 +9,28 @@ st.set_page_config(page_title="🍽️ Şefin Mutfağı | Akıllı Yemek Öneric
 # -----------------------------
 def set_bg():
     import base64
+    import os
 
-    with open(bg.PNG, "rb") as f:
-        data = base64.b64encode(f.read()).decode()
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    bg_path = os.path.join(BASE_DIR, "bg.png")
 
-    st.markdown(f"""
-    <style>
-    .stApp {{
-        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-        url("data:image/png;base64,{data}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        height: 100vh;
-    }}
+    if os.path.exists(bg_path):
+        with open(bg_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode()
 
-    .block-container {{
-        background: rgba(255,255,255,0.05);
-        padding: 3rem;
-        border-radius: 25px;
-        max-width: 600px;
-        margin: auto;
-        margin-top: 10vh;
-    }}
-
-    h1,h2,h3,p,div,label {{
-        color:white !important;
-        text-align: center;
-    }}
-
-    .stButton>button {{
-        width: 100%;
-        border-radius: 12px;
-        background-color: #ff4b4b;
-        color: white;
-        font-weight: bold;
-        border: none;
-        height: 3rem;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <style>
+        .stApp {{
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+            url("data:image/png;base64,{data}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        st.error("bg.png bulunamadı. Dosya yolunu kontrol et.")
 
 # ================================
 # 🔴 SENİN TÜM TARİFLERİN
