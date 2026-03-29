@@ -1,37 +1,20 @@
 import streamlit as st
-import base64
 
-st.set_page_config(page_title="Yemek Öneri Sistemi", page_icon="🍽️", layout="centered")
+st.set_page_config(page_title="🍽️ Akıllı Yemek Önerici", layout="centered")
 
 # -----------------------------
-# BACKGROUND EKLEME
+# CSS (ORTALAMA + TEMİZ UI)
 # -----------------------------
-def set_bg(image_file):
-    with open(image_file, "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-
-    st.markdown(f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{data}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-    }}
-
-    .block-container {{
-        background-color: rgba(0, 0, 0, 0.75);
-        padding: 2rem;
-        border-radius: 15px;
-    }}
-
-    h2, h3, h4, p, div {{
-        color: white !important;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
-
-set_bg("bg.PNG")
+st.markdown("""
+<style>
+.block-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 2rem;
+    text-align: center;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # -----------------------------
 # SESSION STATE
@@ -41,98 +24,137 @@ if "step" not in st.session_state:
     st.session_state.answers = {}
 
 # -----------------------------
-# SORULAR
+# SORULAR (7 ADET)
 # -----------------------------
 questions = [
-    ("Hangi öğün?", ["Kahvaltı", "Öğle", "Akşam", "Atıştırmalık"]),
-    ("Ne kadar zamanın var?", ["<15 dk", "15-30 dk", "30-60 dk", "60+ dk"]),
-    ("Bütçen?", ["Düşük", "Orta", "Yüksek"]),
-    ("Beslenme tercihin?", ["Et", "Tavuk", "Sebze", "Vegan"]),
-    ("Diyet durumun?", ["Yok", "Kalori kontrolü", "Protein", "Düşük karbonhidrat"]),
-    ("Nasıl bir yemek?", ["Hafif", "Doyurucu", "Sağlıklı", "Kaçamak"]),
-    ("Ruh halin?", ["Yorgun", "Stresli", "Mutlu", "Enerjik"]),
-    ("Deneyim?", ["Hızlı", "Konfor", "Yeni", "Klasik"]),
-    ("Evde ne var?", ["Tavuk", "Et", "Sebze", "Makarna/Pilav", "Yok"]),
-    ("Karbonhidrat?", ["Pilav/Makarna", "Ekmek", "Olmasın", "Fark etmez"]),
-    ("Tat tercihi?", ["Acılı", "Tatlı", "Tuzlu", "Dengeli"]),
-    ("Uğraş seviyesi?", ["Pratik", "Orta", "Detaylı"])
+    {"q": "Hangi öğün?", "type": "single", "options": ["Kahvaltı", "Öğle", "Akşam"]},
+    {"q": "Ne kadar zamanın var?", "type": "single", "options": ["<15 dk", "15-30 dk", "30+ dk"]},
+    {"q": "Beslenme tercihin?", "type": "multi", "options": ["Et", "Tavuk", "Sebze", "Vegan"]},
+    {"q": "Nasıl bir yemek istersin?", "type": "single", "options": ["Hafif", "Doyurucu", "Sağlıklı"]},
+    {"q": "Ruh halin?", "type": "single", "options": ["Yorgun", "Stresli", "Mutlu"]},
+    {"q": "Evde ne var?", "type": "multi", "options": ["Tavuk", "Et", "Sebze", "Makarna"]},
+    {"q": "Uğraş seviyesi?", "type": "single", "options": ["Pratik", "Orta", "Detaylı"]}
 ]
 
 # -----------------------------
 # YEMEK VERİ TABANI
 # -----------------------------
 meals = [
-    {"name": "Tavuk Sote", "type": "Tavuk", "time": "15-30 dk", "cal": 400, "tags": ["Hafif", "Protein"]},
-    {"name": "Izgara Tavuk Salata", "type": "Tavuk", "time": "<15 dk", "cal": 300, "tags": ["Hafif", "Kalori kontrolü"]},
-    {"name": "Tavuklu Makarna", "type": "Tavuk", "time": "15-30 dk", "cal": 550, "tags": ["Doyurucu"]},
-    {"name": "Sebze Sote", "type": "Sebze", "time": "15-30 dk", "cal": 250, "tags": ["Vegan", "Hafif"]},
-    {"name": "Kıymalı Makarna", "type": "Et", "time": "30-60 dk", "cal": 650, "tags": ["Doyurucu"]}
+    {
+        "name": "Tavuk Sote",
+        "type": ["Tavuk"],
+        "time": "<15 dk",
+        "cal": 400,
+        "tags": ["Hafif", "Pratik"],
+        "ingredients": ["Tavuk", "Biber", "Soğan"],
+        "recipe": ["Tavukları doğra", "Tavada pişir", "Sebzeleri ekle", "Baharatla"]
+    },
+    {
+        "name": "Izgara Tavuk Salata",
+        "type": ["Tavuk"],
+        "time": "<15 dk",
+        "cal": 300,
+        "tags": ["Sağlıklı", "Hafif"],
+        "ingredients": ["Tavuk", "Marul", "Domates"],
+        "recipe": ["Tavuğu ızgara yap", "Sebzelerle karıştır"]
+    },
+    {
+        "name": "Sebze Sote",
+        "type": ["Sebze", "Vegan"],
+        "time": "15-30 dk",
+        "cal": 250,
+        "tags": ["Hafif", "Sağlıklı"],
+        "ingredients": ["Kabak", "Biber", "Havuç"],
+        "recipe": ["Sebzeleri doğra", "Tavada pişir"]
+    },
+    {
+        "name": "Kıymalı Makarna",
+        "type": ["Et"],
+        "time": "30+ dk",
+        "cal": 650,
+        "tags": ["Doyurucu"],
+        "ingredients": ["Kıyma", "Makarna"],
+        "recipe": ["Kıymayı pişir", "Makarnayı haşla", "Karıştır"]
+    }
 ]
 
 # -----------------------------
-# UI
+# SORU AKIŞI
 # -----------------------------
-st.markdown("<h2 style='text-align:center;'>🍽️ Yemek Öneri Sistemi</h2>", unsafe_allow_html=True)
+st.title("🍽️ Yemek Önerici")
 
 if st.session_state.step < len(questions):
-    q, options = questions[st.session_state.step]
+    q_data = questions[st.session_state.step]
+    st.subheader(q_data["q"])
 
-    st.markdown(f"<h4 style='text-align:center;'>{q}</h4>", unsafe_allow_html=True)
+    # Çoklu seçim
+    if q_data["type"] == "multi":
+        selected = st.multiselect("", q_data["options"])
+    else:
+        selected = st.radio("", q_data["options"])
 
-    choice = st.radio("", options, key=st.session_state.step)
+    # Otomatik geçiş
+    if selected:
+        st.session_state.answers[q_data["q"]] = selected
+        st.session_state.step += 1
+        st.rerun()
 
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        if st.button("Devam"):
-            st.session_state.answers[q] = choice
-            st.session_state.step += 1
-            st.rerun()
+# -----------------------------
+# SKORLAMA FONKSİYONU
+# -----------------------------
+def score_meal(meal, answers):
+    score = 0
 
+    # Tür uyumu
+    if any(t in answers["Beslenme tercihin?"] for t in meal["type"]):
+        score += 3
+
+    # Süre uyumu
+    if meal["time"] == answers["Ne kadar zamanın var?"]:
+        score += 2
+
+    # Yemek tipi
+    if answers["Nasıl bir yemek istersin?"] in meal["tags"]:
+        score += 2
+
+    # Malzeme uyumu
+    if any(i in answers["Evde ne var?"] for i in meal["ingredients"]):
+        score += 2
+
+    # Pratiklik
+    if answers["Uğraş seviyesi?"] == "Pratik" and meal["time"] == "<15 dk":
+        score += 1
+
+    return score
+
+# -----------------------------
+# SONUÇ EKRANI
+# -----------------------------
 else:
-    st.markdown("<h3 style='text-align:center;'>🍽️ Senin için en uygun yemekler</h3>", unsafe_allow_html=True)
+    st.subheader("🎯 Senin için öneriler")
 
-    def score(meal, answers):
-        s = 0
-
-        if meal["type"] == answers["Beslenme tercihin?"]:
-            s += 3
-
-        if meal["time"] == answers["Ne kadar zamanın var?"]:
-            s += 2
-
-        if "Hafif" in meal["tags"] and answers["Nasıl bir yemek?"] == "Hafif":
-            s += 2
-
-        if "Doyurucu" in meal["tags"] and answers["Nasıl bir yemek?"] == "Doyurucu":
-            s += 2
-
-        if "Kalori kontrolü" in meal["tags"] and answers["Diyet durumun?"] == "Kalori kontrolü":
-            s += 2
-
-        return s
-
-    scored = [(meal, score(meal, st.session_state.answers)) for meal in meals]
+    scored = [(meal, score_meal(meal, st.session_state.answers)) for meal in meals]
     scored.sort(key=lambda x: x[1], reverse=True)
 
-    main = scored[0][0]
-    alt1 = scored[1][0]
-    alt2 = scored[2][0]
+    main, alt1, alt2 = scored[0][0], scored[1][0], scored[2][0]
 
-    def show_meal(title, meal):
-        st.subheader(title + ": " + meal["name"])
+    def show(meal, title):
+        st.markdown(f"### {title}: {meal['name']}")
         st.write(f"Süre: {meal['time']}")
         st.write(f"Kalori: {meal['cal']} kcal")
 
-    show_meal("🎯 Ana Yemek", main)
-    show_meal("🔁 Alternatif", alt1)
-    show_meal("🔁 Alternatif", alt2)
+    show(main, "Ana Yemek")
+    show(alt1, "Alternatif")
+    show(alt2, "Alternatif")
 
-    if st.button("Tarif göster"):
-        st.markdown("### 📖 Tarif")
-        st.write("""
-        1. Tavukları doğra  
-        2. Tavada yağ ile pişir  
-        3. Sebzeleri ekle  
-        4. Baharat ekle  
-        5. 15 dakika pişir  
-        """)
+    # Tarif isteği
+    if st.button("Tarifini görmek ister misiniz?"):
+        st.markdown(f"## 📖 {main['name']} Tarifi")
+
+        st.write("**Malzemeler:**")
+        for i in main["ingredients"]:
+            st.write(f"- {i}")
+
+        st.write("**Adımlar:**")
+        for step in main["recipe"]:
+            st.write(f"- {step}")
