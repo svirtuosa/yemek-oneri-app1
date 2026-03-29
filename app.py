@@ -8,30 +8,37 @@ st.set_page_config(page_title="🍽️ Şefin Mutfağı | Akıllı Yemek Öneric
 # CSS
 # -----------------------------
 def set_bg():
-    import base64
-    import os
+    file_path = "bg.PNG"
 
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    bg_path = os.path.join(BASE_DIR, "bg.png")
-
-    if os.path.exists(bg_path):
-        with open(bg_path, "rb") as f:
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
             data = base64.b64encode(f.read()).decode()
 
         st.markdown(f"""
         <style>
         .stApp {{
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-            url("data:image/png;base64,{data}");
+            background-image: url("data:image/png;base64,{data}");
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
+        }}
+
+        .block-container {{
+            background: rgba(0,0,0,0.6);
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 600px;
+            margin: auto;
+        }}
+
+        h1, h2, h3, h4, p, div {{
+            color: white !important;
+            text-align: center;
         }}
         </style>
         """, unsafe_allow_html=True)
     else:
-        st.error("bg.png bulunamadı. Dosya yolunu kontrol et.")
-
+        st.warning("bg.PNG bulunamadı. Aynı klasöre ekle.")
+set_bg()
 # ================================
 # 🔴 SENİN TÜM TARİFLERİN
 # ================================
