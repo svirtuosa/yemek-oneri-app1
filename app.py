@@ -17,62 +17,38 @@ st.set_page_config(page_title="🍽️ Yemek Önerici", layout="centered")
 # -----------------------------
 
 def set_bg():
+    file_path = "bg.PNG"
 
-    if os.path.exists("bg.PNG"):
-
-        with open("bg.PNG", "rb") as f:
-
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
             data = base64.b64encode(f.read()).decode()
 
-
-
         st.markdown(f"""
-
         <style>
-
         .stApp {{
-
             background-image: url("data:image/png;base64,{data}");
-
             background-size: cover;
-
+            background-position: center;
         }}
 
         .block-container {{
-
-            background: rgba(0,0,0,0.7);
-
+            background: rgba(0,0,0,0.6);
             padding: 2rem;
-
-            border-radius: 20px;
-
-            max-width: 900px;
-
-            margin: auto;
-
-        }}
-
-        .card {{
-
-            background: rgba(255,255,255,0.08);
-
-            padding: 1.5rem;
-
             border-radius: 15px;
-
-            margin-bottom: 1rem;
-
+            max-width: 600px;
+            margin: auto;
         }}
 
-        h1,h2,h3,h4,p,div {{ color:white !important; }}
-
+        h1, h2, h3, h4, p, div {{
+            color: white !important;
+            text-align: center;
+        }}
         </style>
-
         """, unsafe_allow_html=True)
-
-
-
+    else:
+        st.warning("bg.PNG bulunamadı. Aynı klasöre ekle.")
 set_bg()
+
 
 
 
