@@ -31,7 +31,7 @@ def set_bg(image_file):
     </style>
     """, unsafe_allow_html=True)
 
-set_bg("bg.png")
+set_bg("bg.PNG")
 
 # -----------------------------
 # SESSION STATE
