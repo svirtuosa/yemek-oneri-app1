@@ -3,13 +3,10 @@ import base64
 import os
 from openai import OpenAI
 
-# -----------------------------
-# CONFIG
-# -----------------------------
 st.set_page_config(page_title="🍽️ AI Yemek Önerici", layout="centered")
 
 # -----------------------------
-# OPENAI CLIENT
+# API
 # -----------------------------
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
@@ -17,9 +14,8 @@ client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 # BACKGROUND
 # -----------------------------
 def set_bg():
-    file_path = "bg.PNG"
-    if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
+    if os.path.exists("bg.PNG"):
+        with open("bg.PNG", "rb") as f:
             data = base64.b64encode(f.read()).decode()
 
         st.markdown(f"""
@@ -27,19 +23,15 @@ def set_bg():
         .stApp {{
             background-image: url("data:image/png;base64,{data}");
             background-size: cover;
-            background-position: center;
         }}
         .block-container {{
             background: rgba(0,0,0,0.6);
             padding: 2rem;
             border-radius: 15px;
-            max-width: 650px;
+            max-width: 600px;
             margin: auto;
         }}
-        h1,h2,h3,h4,p,div {{
-            color:white !important;
-            text-align:center;
-        }}
+        h1,h2,h3,h4,p,div {{ color:white !important; text-align:center; }}
         </style>
         """, unsafe_allow_html=True)
 
@@ -50,19 +42,32 @@ set_bg()
 # -----------------------------
 if "step" not in st.session_state:
     st.session_state.step = 0
+if "answers" not in st.session_state:
     st.session_state.answers = {}
+if "result" not in st.session_state:
+    st.session_state.result = None
 
 # -----------------------------
-# SORULAR (7 adet)
+# SORULAR
 # -----------------------------
 questions = [
-    {"q": "Hangi öğün?", "options": ["Kahvaltı", "Öğle", "Akşam"]},
-    {"q": "Ne kadar zamanın var?", "options": ["<15 dk", "15-30 dk", "30+ dk"]},
-    {"q": "Beslenme tercihin?", "options": ["Et", "Tavuk", "Sebze", "Vegan"]},
-    {"q": "Nasıl bir yemek?", "options": ["Hafif", "Doyurucu", "Sağlıklı"]},
-    {"q": "Ruh halin?", "options": ["Yorgun", "Stresli", "Mutlu"]},
-    {"q": "Evde ne var?", "options": ["Tavuk", "Et", "Sebze", "Makarna"]},
-    {"q": "Uğraş seviyesi?", "options": ["Pratik", "Orta", "Detaylı"]}
+    "Hangi öğün?",
+    "Ne kadar zamanın var?",
+    "Beslenme tercihin?",
+    "Nasıl bir yemek?",
+    "Ruh halin?",
+    "Evde ne var?",
+    "Uğraş seviyesi?"
+]
+
+options = [
+    ["Kahvaltı", "Öğle", "Akşam"],
+    ["<15 dk", "15-30 dk", "30+ dk"],
+    ["Et", "Tavuk", "Sebze", "Vegan"],
+    ["Hafif", "Doyurucu", "Sağlıklı"],
+    ["Yorgun", "Stresli", "Mutlu"],
+    ["Tavuk", "Et", "Sebze", "Makarna"],
+    ["Pratik", "Orta", "Detaylı"]
 ]
 
 # -----------------------------
@@ -71,46 +76,45 @@ questions = [
 st.title("🍽️ AI Yemek Önerici")
 
 if st.session_state.step < len(questions):
-    q = questions[st.session_state.step]
 
-    st.subheader(q["q"])
-    choice = st.multiselect("", q["options"])
+    q = questions[st.session_state.step]
+    opts = options[st.session_state.step]
+
+    st.subheader(q)
+    choice = st.multiselect("", opts, key=st.session_state.step)
 
     if st.button("Devam"):
         if choice:
-            st.session_state.answers[q["q"]] = choice
+            st.session_state.answers[q] = choice
             st.session_state.step += 1
             st.rerun()
         else:
-            st.warning("Lütfen seçim yap")
+            st.warning("Seçim yap")
 
 # -----------------------------
-# AI TARİF
+# AI FONKSİYON
 # -----------------------------
 def generate_recipe(answers):
     prompt = f"""
     Kullanıcı tercihleri:
     {answers}
 
-    Buna göre:
-    - 1 ana yemek
-    - 2 alternatif yemek öner
+    1 ana yemek ve 2 alternatif öner.
 
-    Her yemek için:
+    Her biri için:
     - İsim
     - Neden uygun
-    - Tahmini süre
+    - Süre
     - Kalori
-    - Malzemeler (liste halinde)
-    - Adım adım tarif
+    - Malzemeler
+    - Tarif
 
-    Türkçe yaz, düzenli ve okunabilir olsun.
+    Türkçe yaz.
     """
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        messages=[{"role": "user", "content": prompt}]
     )
 
     return response.choices[0].message.content
@@ -118,20 +122,18 @@ def generate_recipe(answers):
 # -----------------------------
 # SONUÇ
 # -----------------------------
-else:
-    st.subheader("🤖 AI senin için en iyi yemekleri seçiyor...")
+if st.session_state.step >= len(questions):
 
-    if "result" not in st.session_state:
+    st.subheader("🤖 AI öneri hazırlıyor...")
+
+    if st.session_state.result is None:
         with st.spinner("AI düşünüyor..."):
             st.session_state.result = generate_recipe(st.session_state.answers)
 
     st.markdown(st.session_state.result)
-
-    st.divider()
 
     if st.button("🔄 Baştan Başla"):
         st.session_state.step = 0
         st.session_state.answers = {}
         st.session_state.result = None
         st.rerun()
-        
