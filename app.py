@@ -10,7 +10,7 @@ st.set_page_config(page_title="🍽️ Şefin Mutfağı | Akıllı Yemek Öneric
 def set_bg():
     import base64
 
-    with open("bg.PNG", "rb") as f:
+    with open(bg.PNG, "rb") as f:
         data = base64.b64encode(f.read()).decode()
 
     st.markdown(f"""
