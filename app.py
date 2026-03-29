@@ -1,14 +1,8 @@
 import streamlit as st
 import base64
 import os
-from openai import OpenAI
 
-st.set_page_config(page_title="🍽️ AI Yemek Önerici", layout="centered")
-
-# -----------------------------
-# API
-# -----------------------------
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+st.set_page_config(page_title="🍽️ Yemek Önerici", layout="centered")
 
 # -----------------------------
 # BACKGROUND
@@ -31,7 +25,10 @@ def set_bg():
             max-width: 600px;
             margin: auto;
         }}
-        h1,h2,h3,h4,p,div {{ color:white !important; text-align:center; }}
+        h1,h2,h3,h4,p,div {{
+            color:white !important;
+            text-align:center;
+        }}
         </style>
         """, unsafe_allow_html=True)
 
@@ -44,8 +41,6 @@ if "step" not in st.session_state:
     st.session_state.step = 0
 if "answers" not in st.session_state:
     st.session_state.answers = {}
-if "result" not in st.session_state:
-    st.session_state.result = None
 
 # -----------------------------
 # SORULAR
@@ -55,7 +50,6 @@ questions = [
     "Ne kadar zamanın var?",
     "Beslenme tercihin?",
     "Nasıl bir yemek?",
-    "Ruh halin?",
     "Evde ne var?",
     "Uğraş seviyesi?"
 ]
@@ -65,15 +59,24 @@ options = [
     ["<15 dk", "15-30 dk", "30+ dk"],
     ["Et", "Tavuk", "Sebze", "Vegan"],
     ["Hafif", "Doyurucu", "Sağlıklı"],
-    ["Yorgun", "Stresli", "Mutlu"],
     ["Tavuk", "Et", "Sebze", "Makarna"],
     ["Pratik", "Orta", "Detaylı"]
 ]
 
 # -----------------------------
-# UI
+# YEMEK HAVUZU
 # -----------------------------
-st.title("🍽️ AI Yemek Önerici")
+meals = [
+    {"name": "Tavuk Sote", "type": "Tavuk", "time": "<15 dk", "cal": 400},
+    {"name": "Izgara Tavuk Salata", "type": "Tavuk", "time": "<15 dk", "cal": 300},
+    {"name": "Sebze Sote", "type": "Sebze", "time": "15-30 dk", "cal": 250},
+    {"name": "Kıymalı Makarna", "type": "Et", "time": "30+ dk", "cal": 650},
+]
+
+# -----------------------------
+# SORU AKIŞI
+# -----------------------------
+st.title("🍽️ Yemek Önerici")
 
 if st.session_state.step < len(questions):
 
@@ -81,7 +84,7 @@ if st.session_state.step < len(questions):
     opts = options[st.session_state.step]
 
     st.subheader(q)
-    choice = st.multiselect("", opts, key=st.session_state.step)
+    choice = st.multiselect("", opts)
 
     if st.button("Devam"):
         if choice:
@@ -92,48 +95,70 @@ if st.session_state.step < len(questions):
             st.warning("Seçim yap")
 
 # -----------------------------
-# AI FONKSİYON
+# PUANLAMA
 # -----------------------------
-def generate_recipe(answers):
-    prompt = f"""
-    Kullanıcı tercihleri:
-    {answers}
+def score(meal, answers):
+    s = 0
 
-    1 ana yemek ve 2 alternatif öner.
+    if meal["type"] in answers["Beslenme tercihin?"]:
+        s += 3
 
-    Her biri için:
-    - İsim
-    - Neden uygun
-    - Süre
-    - Kalori
-    - Malzemeler
-    - Tarif
+    if meal["time"] == answers["Ne kadar zamanın var?"][0]:
+        s += 2
 
-    Türkçe yaz.
-    """
+    if meal["type"] in answers["Evde ne var?"]:
+        s += 2
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+    return s
 
-    return response.choices[0].message.content
+# -----------------------------
+# TARİF OLUŞTURMA (FAKE AI)
+# -----------------------------
+def generate_recipe(meal, answers):
+    return f"""
+## 🍽️ {meal['name']}
+
+**Neden önerildi:** Tercihlerinle uyumlu, pratik ve uygun bir seçenek.
+
+**Süre:** {meal['time']}  
+**Kalori:** {meal['cal']} kcal  
+
+### 🛒 Malzemeler:
+- Ana malzeme (seçimine göre)
+- Soğan  
+- Yağ  
+- Baharatlar  
+
+### 👨‍🍳 Tarif:
+1. Malzemeleri doğra  
+2. Tavayı ısıt  
+3. Ana malzemeyi ekle  
+4. Baharat ekle  
+5. 10-20 dk pişir  
+
+👉 Basit, hızlı ve tam senlik.
+"""
 
 # -----------------------------
 # SONUÇ
 # -----------------------------
 if st.session_state.step >= len(questions):
 
-    st.subheader("🤖 AI öneri hazırlıyor...")
+    st.subheader("🎯 Senin için öneri")
 
-    if st.session_state.result is None:
-        with st.spinner("AI düşünüyor..."):
-            st.session_state.result = generate_recipe(st.session_state.answers)
+    scored = sorted(meals, key=lambda m: score(m, st.session_state.answers), reverse=True)
 
-    st.markdown(st.session_state.result)
+    main = scored[0]
+    alt1 = scored[1]
+    alt2 = scored[2]
+
+    st.markdown(generate_recipe(main, st.session_state.answers))
+
+    st.markdown("### 🔁 Alternatifler")
+    st.write(alt1["name"])
+    st.write(alt2["name"])
 
     if st.button("🔄 Baştan Başla"):
         st.session_state.step = 0
         st.session_state.answers = {}
-        st.session_state.result = None
         st.rerun()
