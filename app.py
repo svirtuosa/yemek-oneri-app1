@@ -1,15 +1,23 @@
 import streamlit as st
 import base64
 import os
+from openai import OpenAI
 
-st.set_page_config(page_title="🍽️ Yemek Önerici", layout="centered")
+# -----------------------------
+# CONFIG
+# -----------------------------
+st.set_page_config(page_title="🍽️ AI Yemek Önerici", layout="centered")
+
+# -----------------------------
+# OPENAI CLIENT
+# -----------------------------
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # -----------------------------
 # BACKGROUND
 # -----------------------------
 def set_bg():
     file_path = "bg.PNG"
-
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
             data = base64.b64encode(f.read()).decode()
@@ -21,23 +29,19 @@ def set_bg():
             background-size: cover;
             background-position: center;
         }}
-
         .block-container {{
             background: rgba(0,0,0,0.6);
             padding: 2rem;
             border-radius: 15px;
-            max-width: 600px;
+            max-width: 650px;
             margin: auto;
         }}
-
-        h1, h2, h3, h4, p, div {{
-            color: white !important;
-            text-align: center;
+        h1,h2,h3,h4,p,div {{
+            color:white !important;
+            text-align:center;
         }}
         </style>
         """, unsafe_allow_html=True)
-    else:
-        st.warning("bg.PNG bulunamadı")
 
 set_bg()
 
@@ -49,94 +53,85 @@ if "step" not in st.session_state:
     st.session_state.answers = {}
 
 # -----------------------------
-# SORULAR
+# SORULAR (7 adet)
 # -----------------------------
 questions = [
-    {"q": "Hangi öğün?", "type": "single", "options": ["Kahvaltı", "Öğle", "Akşam"]},
-    {"q": "Ne kadar zamanın var?", "type": "single", "options": ["<15 dk", "15-30 dk", "30+ dk"]},
-    {"q": "Beslenme tercihin?", "type": "multi", "options": ["Et", "Tavuk", "Sebze", "Vegan"]},
-    {"q": "Nasıl bir yemek?", "type": "single", "options": ["Hafif", "Doyurucu", "Sağlıklı"]},
-    {"q": "Evde ne var?", "type": "multi", "options": ["Tavuk", "Et", "Sebze", "Makarna"]},
-    {"q": "Uğraş seviyesi?", "type": "single", "options": ["Pratik", "Orta", "Detaylı"]}
+    {"q": "Hangi öğün?", "options": ["Kahvaltı", "Öğle", "Akşam"]},
+    {"q": "Ne kadar zamanın var?", "options": ["<15 dk", "15-30 dk", "30+ dk"]},
+    {"q": "Beslenme tercihin?", "options": ["Et", "Tavuk", "Sebze", "Vegan"]},
+    {"q": "Nasıl bir yemek?", "options": ["Hafif", "Doyurucu", "Sağlıklı"]},
+    {"q": "Ruh halin?", "options": ["Yorgun", "Stresli", "Mutlu"]},
+    {"q": "Evde ne var?", "options": ["Tavuk", "Et", "Sebze", "Makarna"]},
+    {"q": "Uğraş seviyesi?", "options": ["Pratik", "Orta", "Detaylı"]}
 ]
 
 # -----------------------------
-# YEMEKLER
+# UI
 # -----------------------------
-meals = [
-    {"name": "Tavuk Sote", "types": ["Tavuk"], "time": "<15 dk", "cal": 400, "tags": ["Hafif", "Pratik"], "ingredients": ["Tavuk"], "recipe": ["Tavuk doğra", "Pişir"]},
-    {"name": "Izgara Tavuk Salata", "types": ["Tavuk"], "time": "<15 dk", "cal": 300, "tags": ["Sağlıklı"], "ingredients": ["Tavuk"], "recipe": ["Izgara yap", "Karıştır"]},
-    {"name": "Sebze Sote", "types": ["Sebze", "Vegan"], "time": "15-30 dk", "cal": 250, "tags": ["Hafif"], "ingredients": ["Sebze"], "recipe": ["Sebzeleri pişir"]},
-    {"name": "Kıymalı Makarna", "types": ["Et"], "time": "30+ dk", "cal": 650, "tags": ["Doyurucu"], "ingredients": ["Et", "Makarna"], "recipe": ["Pişir"]},
-]
-
-# -----------------------------
-# SORU AKIŞI
-# -----------------------------
-st.title("🍽️ Yemek Önerici")
+st.title("🍽️ AI Yemek Önerici")
 
 if st.session_state.step < len(questions):
+    q = questions[st.session_state.step]
 
-    q_data = questions[st.session_state.step]
-    st.subheader(q_data["q"])
-
-    if q_data["type"] == "multi":
-        selected = st.multiselect("", q_data["options"])
-    else:
-        selected = st.radio("", q_data["options"])
+    st.subheader(q["q"])
+    choice = st.multiselect("", q["options"])
 
     if st.button("Devam"):
-        if selected:
-            st.session_state.answers[q_data["q"]] = selected
+        if choice:
+            st.session_state.answers[q["q"]] = choice
             st.session_state.step += 1
             st.rerun()
         else:
-            st.warning("Seçim yap")
+            st.warning("Lütfen seçim yap")
 
+# -----------------------------
+# AI TARİF
+# -----------------------------
+def generate_recipe(answers):
+    prompt = f"""
+    Kullanıcı tercihleri:
+    {answers}
+
+    Buna göre:
+    - 1 ana yemek
+    - 2 alternatif yemek öner
+
+    Her yemek için:
+    - İsim
+    - Neden uygun
+    - Tahmini süre
+    - Kalori
+    - Malzemeler (liste halinde)
+    - Adım adım tarif
+
+    Türkçe yaz, düzenli ve okunabilir olsun.
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7
+    )
+
+    return response.choices[0].message.content
+
+# -----------------------------
+# SONUÇ
+# -----------------------------
 else:
+    st.subheader("🤖 AI senin için en iyi yemekleri seçiyor...")
 
-    st.subheader("🎯 Öneriler")
+    if "result" not in st.session_state:
+        with st.spinner("AI düşünüyor..."):
+            st.session_state.result = generate_recipe(st.session_state.answers)
 
-    def score(meal):
-        s = 0
-        a = st.session_state.answers
+    st.markdown(st.session_state.result)
 
-        if any(t in a["Beslenme tercihin?"] for t in meal["types"]):
-            s += 3
+    st.divider()
 
-        if meal["time"] == a["Ne kadar zamanın var?"]:
-            s += 2
-
-        if a["Nasıl bir yemek?"] in meal["tags"]:
-            s += 2
-
-        if any(i in a["Evde ne var?"] for i in meal["ingredients"]):
-            s += 2
-
-        if a["Uğraş seviyesi?"] == "Pratik" and meal["time"] == "<15 dk":
-            s += 1
-
-        return s
-
-    scored = sorted(meals, key=lambda m: score(m), reverse=True)
-
-    main, alt1, alt2 = scored[0], scored[1], scored[2]
-
-    def show(title, meal):
-        st.markdown(f"### {title}: {meal['name']}")
-        st.write(f"Süre: {meal['time']}")
-        st.write(f"Kalori: {meal['cal']} kcal")
-
-    show("Ana Yemek", main)
-    show("Alternatif", alt1)
-    show("Alternatif", alt2)
-
-    if st.button("Tarifini görmek ister misiniz?"):
-        st.markdown(f"## 📖 {main['name']}")
-        st.write("Malzemeler:")
-        for i in main["ingredients"]:
-            st.write("-", i)
-
-        st.write("Adımlar:")
-        for step in main["recipe"]:
-            st.write("-", step)
+    if st.button("🔄 Baştan Başla"):
+        st.session_state.step = 0
+        st.session_state.answers = {}
+        st.session_state.result = None
+        st.rerun()
+        
