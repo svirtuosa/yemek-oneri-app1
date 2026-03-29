@@ -619,7 +619,7 @@ meals = [
     {"name":"Humus Yatağında Mantar","cat":"Öğle","time":"15-30 dk","tags":["Vegan","Sağlıklı"]},
     {"name":"Ev Yapımı Pizza","cat":"Akşam","time":"30+ dk","tags":["Kaçamak","Doyurucu"]},
     {"name":"Kinoa Salatası","cat":"Öğle","time":"15-30 dk","tags":["Vegan","Sağlıklı","Hafif"]},
-    {"name":"Mercimekli Vegan Burger","cat":"Öğle","time":"30+ dk","tags":["Vegan","Doyurucu"]}
+    {"name":"Mercimekli Vegan Burger","cat":"Öğle","time":"30+ dk","tags":["Vegan","Doyurucu"]},
 
     {"name":"Somon Izgara","cat":"Akşam","time":"15-30 dk","tags":["Sağlıklı","Düşük kalorili","Balık"]},
     {"name":"Ezogelin Çorbası","cat":"Öğle","time":"30+ dk","tags":["Sağlıklı","Doyurucu"]},
@@ -630,7 +630,7 @@ meals = [
     {"name":"Levrek Buğulama","cat":"Akşam","time":"30+ dk","tags":["Sağlıklı","Balık"]},
     {"name":"Chia Tohumlu Puding","cat":"Kahvaltı","time":"<15 dk","tags":["Vegan","Sağlıklı","Hafif"]},
     {"name":"Domates Çorbası (Közlenmiş)","cat":"Öğle","time":"30+ dk","tags":["Sağlıklı","Hafif"]},
-    {"name":"Fırın Sütlaç","cat":"Akşam","time":"30+ dk","tags":["Tatlı","Orta"]}
+    {"name":"Fırın Sütlaç","cat":"Akşam","time":"30+ dk","tags":["Tatlı","Orta"]},
 
     {"name":"Guacamole Soslu Nachos","cat":"Öğle","time":"<15 dk","tags":["Kaçamak","Vegan"]},
     {"name":"Buharda Sebzeli Gyozza","cat":"Akşam","time":"30+ dk","tags":["Vegan","Uzak Doğu"]},
@@ -641,7 +641,7 @@ meals = [
     {"name":"Atom (Süzme Yoğurtlu Meze)","cat":"Öğle","time":"<15 dk","tags":["Pratik","Sağlıklı"]},
     {"name":"Tavuklu Quesadilla","cat":"Akşam","time":"15-30 dk","tags":["Tavuk","Doyurucu"]},
     {"name":"Vişneli Yaprak Sarma","cat":"Akşam","time":"30+ dk","tags":["Vegan","Sağlıklı"]},
-    {"name":"Beef Stroganoff","cat":"Akşam","time":"30+ dk","tags":["Et ağırlıklı","Doyurucu"]}
+    {"name":"Beef Stroganoff","cat":"Akşam","time":"30+ dk","tags":["Et ağırlıklı","Doyurucu"]},
 
     {"name":"Kabak Mücver","cat":"Öğle","time":"15-30 dk","tags":["Sebze ağırlıklı","Sağlıklı","Hafif"]},
     {"name":"Tom Yum Çorbası","cat":"Akşam","time":"15-30 dk","tags":["Uzak Doğu","Düşük kalorili"]},
@@ -652,7 +652,7 @@ meals = [
     {"name":"Ratatouille","cat":"Akşam","time":"30+ dk","tags":["Vegan","Sağlıklı","Sebze ağırlıklı"]},
     {"name":"İçli Köfte (Haşlama)","cat":"Akşam","time":"30+ dk","tags":["Et ağırlıklı","Detaylı"]},
     {"name":"Karnıyarık","cat":"Akşam","time":"30+ dk","tags":["Et ağırlıklı","Doyurucu"]},
-    {"name":"İrmik Helvası","cat":"Öğle","time":"15-30 dk","tags":["Tatlı","Pratik"]}
+    {"name":"İrmik Helvası","cat":"Öğle","time":"15-30 dk","tags":["Tatlı","Pratik"]},
 
     {"name":"Tavuk Tantuni","cat":"Öğle","time":"15-30 dk","tags":["Tavuk","Doyurucu","Kaçamak"]},
     {"name":"Mantar Kokoreç","cat":"Akşam","time":"<15 dk","tags":["Vegan","Hafif","Pratik"]},
@@ -663,7 +663,7 @@ meals = [
     {"name":"Avokadolu Yumurtalı Tost","cat":"Kahvaltı","time":"<15 dk","tags":["Sağlıklı","Pratik","Yüksek protein"]},
     {"name":"Fırınlanmış Baharatlı Karnabahar","cat":"Öğle","time":"15-30 dk","tags":["Vegan","Düşük kalorili","Hafif"]},
     {"name":"Piyaz (Antalya Usulü)","cat":"Öğle","time":"<15 dk","tags":["Sağlıklı","Yüksek protein"]},
-    {"name":"Hurmalı Enerji Topları","cat":"Akşam","time":"<15 dk","tags":["Tatlı","Sağlıklı","Hafif"]}
+    {"name":"Hurmalı Enerji Topları","cat":"Akşam","time":"<15 dk","tags":["Tatlı","Sağlıklı","Hafif"]},
 
     {"name":"Basit Tavuklu Ramen","cat":"Akşam","time":"30+ dk","tags":["Uzak Doğu","Doyurucu"]},
     {"name":"Zeytinyağlı Bamya","cat":"Öğle","time":"30+ dk","tags":["Vegan","Sağlıklı","Hafif"]},
@@ -674,7 +674,7 @@ meals = [
     {"name":"Portakallı Ördek (Basit)","cat":"Akşam","time":"30+ dk","tags":["Et ağırlıklı","Detaylı"]},
     {"name":"Chia Tohumlu Çilekli Parfe","cat":"Kahvaltı","time":"<15 dk","tags":["Sağlıklı","Vegan","Hafif"]},
     {"name":"Etli Kara Lahana Sarması","cat":"Akşam","time":"30+ dk","tags":["Et ağırlıklı","Doyurucu"]},
-    {"name":"Pavlova","cat":"Akşam","time":"30+ dk","tags":["Tatlı","Hafif"]}
+    {"name":"Pavlova","cat":"Akşam","time":"30+ dk","tags":["Tatlı","Hafif"]},
 
     {"name":"İncirli ve Cevizli Brie","cat":"Kahvaltı","time":"<15 dk","tags":["Sağlıklı","Hafif"]},
     {"name":"Çilekli ve Reyhanlı Limonata","cat":"Öğle","time":"15-30 dk","tags":["Sağlıklı","Hafif"]},
