@@ -752,7 +752,8 @@ else:
         return score
 
     best_match = sorted(meals, key=score_meal, reverse=True)[0]
-    recipe = RECIPE_DATABASE.get(best_match["name"])
+    recipe = NEW_RECIPES.get(best_match["name"], None)
+
 
     if recipe:
         st.success(f"### Önerim: {best_match['name']}")
