@@ -1,20 +1,45 @@
 import streamlit as st
+import base64
+import os
 
-st.set_page_config(page_title="🍽️ Akıllı Yemek Önerici", layout="centered")
+st.set_page_config(page_title="🍽️ Yemek Önerici", layout="centered")
 
 # -----------------------------
-# CSS (ORTALAMA + TEMİZ UI)
+# BACKGROUND (HATA DAYANIKLI)
 # -----------------------------
-st.markdown("""
-<style>
-.block-container {
-    max-width: 600px;
-    margin: auto;
-    padding: 2rem;
-    text-align: center;
-}
-</style>
-""", unsafe_allow_html=True)
+def set_bg():
+    file_path = "bg.PNG"
+
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode()
+
+        st.markdown(f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{data}");
+            background-size: cover;
+            background-position: center;
+        }}
+
+        .block-container {{
+            background: rgba(0,0,0,0.6);
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 600px;
+            margin: auto;
+        }}
+
+        h1, h2, h3, h4, p, div {{
+            color: white !important;
+            text-align: center;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        st.warning("bg.PNG bulunamadı. Aynı klasöre ekle.")
+
+set_bg()
 
 # -----------------------------
 # SESSION STATE
@@ -42,39 +67,39 @@ questions = [
 meals = [
     {
         "name": "Tavuk Sote",
-        "type": ["Tavuk"],
+        "types": ["Tavuk"],
         "time": "<15 dk",
         "cal": 400,
         "tags": ["Hafif", "Pratik"],
-        "ingredients": ["Tavuk", "Biber", "Soğan"],
-        "recipe": ["Tavukları doğra", "Tavada pişir", "Sebzeleri ekle", "Baharatla"]
+        "ingredients": ["Tavuk"],
+        "recipe": ["Tavuk doğra", "Tavada pişir", "Sebze ekle"]
     },
     {
         "name": "Izgara Tavuk Salata",
-        "type": ["Tavuk"],
+        "types": ["Tavuk"],
         "time": "<15 dk",
         "cal": 300,
         "tags": ["Sağlıklı", "Hafif"],
-        "ingredients": ["Tavuk", "Marul", "Domates"],
-        "recipe": ["Tavuğu ızgara yap", "Sebzelerle karıştır"]
+        "ingredients": ["Tavuk"],
+        "recipe": ["Tavuk ızgara", "Salata ile karıştır"]
     },
     {
         "name": "Sebze Sote",
-        "type": ["Sebze", "Vegan"],
+        "types": ["Sebze", "Vegan"],
         "time": "15-30 dk",
         "cal": 250,
-        "tags": ["Hafif", "Sağlıklı"],
-        "ingredients": ["Kabak", "Biber", "Havuç"],
+        "tags": ["Hafif"],
+        "ingredients": ["Sebze"],
         "recipe": ["Sebzeleri doğra", "Tavada pişir"]
     },
     {
         "name": "Kıymalı Makarna",
-        "type": ["Et"],
+        "types": ["Et"],
         "time": "30+ dk",
         "cal": 650,
         "tags": ["Doyurucu"],
-        "ingredients": ["Kıyma", "Makarna"],
-        "recipe": ["Kıymayı pişir", "Makarnayı haşla", "Karıştır"]
+        "ingredients": ["Et", "Makarna"],
+        "recipe": ["Kıymayı pişir", "Makarnayı haşla"]
     }
 ]
 
@@ -85,71 +110,67 @@ st.title("🍽️ Yemek Önerici")
 
 if st.session_state.step < len(questions):
     q_data = questions[st.session_state.step]
+
     st.subheader(q_data["q"])
 
-    # Çoklu seçim
     if q_data["type"] == "multi":
         selected = st.multiselect("", q_data["options"])
     else:
         selected = st.radio("", q_data["options"])
 
-    # Otomatik geçiş
-    if selected:
-        st.session_state.answers[q_data["q"]] = selected
-        st.session_state.step += 1
-        st.rerun()
+    if st.button("Devam"):
+        if selected:
+            st.session_state.answers[q_data["q"]] = selected
+            st.session_state.step += 1
+            st.rerun()
+        else:
+            st.warning("Lütfen seçim yap")
 
 # -----------------------------
-# SKORLAMA FONKSİYONU
+# SKORLAMA
 # -----------------------------
-def score_meal(meal, answers):
-    score = 0
+def score(meal, answers):
+    s = 0
 
-    # Tür uyumu
-    if any(t in answers["Beslenme tercihin?"] for t in meal["type"]):
-        score += 3
+    if any(t in answers["Beslenme tercihin?"] for t in meal["types"]):
+        s += 3
 
-    # Süre uyumu
     if meal["time"] == answers["Ne kadar zamanın var?"]:
-        score += 2
+        s += 2
 
-    # Yemek tipi
     if answers["Nasıl bir yemek istersin?"] in meal["tags"]:
-        score += 2
+        s += 2
 
-    # Malzeme uyumu
     if any(i in answers["Evde ne var?"] for i in meal["ingredients"]):
-        score += 2
+        s += 2
 
-    # Pratiklik
     if answers["Uğraş seviyesi?"] == "Pratik" and meal["time"] == "<15 dk":
-        score += 1
+        s += 1
 
-    return score
+    return s
 
 # -----------------------------
-# SONUÇ EKRANI
+# SONUÇ
 # -----------------------------
 else:
-    st.subheader("🎯 Senin için öneriler")
+    st.subheader("🎯 Öneriler")
 
-    scored = [(meal, score_meal(meal, st.session_state.answers)) for meal in meals]
+    scored = [(m, score(m, st.session_state.answers)) for m in meals]
     scored.sort(key=lambda x: x[1], reverse=True)
 
     main, alt1, alt2 = scored[0][0], scored[1][0], scored[2][0]
 
-    def show(meal, title):
+    def show(title, meal):
         st.markdown(f"### {title}: {meal['name']}")
         st.write(f"Süre: {meal['time']}")
         st.write(f"Kalori: {meal['cal']} kcal")
 
-    show(main, "Ana Yemek")
-    show(alt1, "Alternatif")
-    show(alt2, "Alternatif")
+    show("Ana Yemek", main)
+    show("Alternatif", alt1)
+    show("Alternatif", alt2)
 
-    # Tarif isteği
     if st.button("Tarifini görmek ister misiniz?"):
-        st.markdown(f"## 📖 {main['name']} Tarifi")
+        st.markdown(f"## 📖 {main['name']}")
 
         st.write("**Malzemeler:**")
         for i in main["ingredients"]:
