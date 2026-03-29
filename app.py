@@ -12,19 +12,43 @@ def set_bg():
     <style>
     .stApp {
         background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-        url("https://images.unsplash.com/photo-1556910103-1c02745aae4d");
+        url("bg.PNG");
         background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 100vh;
     }
+
+    /* ANA KUTUYU ORTALA */
     .block-container {
         background: rgba(255,255,255,0.05);
         padding: 3rem;
         border-radius: 25px;
+
+        max-width: 600px;
+        margin: auto;
+        margin-top: 10vh;
     }
-    h1,h2,h3,p,div {color:white !important;}
+
+    /* YAZI RENK */
+    h1,h2,h3,p,div,label {
+        color:white !important;
+        text-align: center;
+    }
+
+    /* BUTON */
+    .stButton>button {
+        width: 100%;
+        border-radius: 12px;
+        background-color: #ff4b4b;
+        color: white;
+        font-weight: bold;
+        border: none;
+        height: 3rem;
+    }
+
     </style>
     """, unsafe_allow_html=True)
-
-set_bg()
 
 # ================================
 # 🔴 SENİN TÜM TARİFLERİN
