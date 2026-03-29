@@ -688,10 +688,65 @@ meals = [
     {"name":"Buzlu Matcha Latte","cat":"Öğle","time":"<15 dk","tags":["Sağlıklı","Hafif"]}
 ]
 
+# ================================
+# ⚙️ MANTIK (LOGIC)
+# ================================
+if "step" not in st.session_state:
+    st.session_state.step = 0
+if "answers" not in st.session_state:
+    st.session_state.answers = {}
 
+questions = [
+    ("Hangi öğün?", "radio", ["Kahvaltı", "Öğle", "Akşam"]),
+    ("Zamanın ne kadar?", "radio", ["<15 dk", "15-30 dk", "30+ dk"]),
+    ("Beslenme tercihin?", "multi", ["Et ağırlıklı","Tavuk","Sebze ağırlıklı","Vegan","Düşük kalorili"]),
+    ("Nasıl bir yemek?", "multi", ["Hafif","Doyurucu","Sağlıklı","Kaçamak"])
+]
 
 # ================================
-# UI (aynı kaldı)
+# 🖥️ ARAYÜZ (UI)
 # ================================
-st.title("🍽️ Yemek Önerici")
-st.write("Hazır.")
+st.title("👨‍🍳 Şefin Akıllı Mutfağı")
+
+if st.session_state.step < len(questions):
+    q, typ, opts = questions[st.session_state.step]
+    st.subheader(q)
+    choice = st.radio("", opts) if typ == "radio" else st.multiselect("", opts)
+    
+    if st.button("Devam"):
+        st.session_state.answers[q] = choice
+        st.session_state.step += 1
+        st.rerun()
+else:
+    # Skorlama ve Öneri
+    ans = st.session_state.answers
+    
+    def score_meal(m):
+        score = 0
+        if m["cat"] == ans["Hangi öğün?"]: score += 5
+        if m["time"] == ans["Zamanın ne kadar?"]: score += 3
+        return score
+
+    best_match = sorted(meals, key=score_meal, reverse=True)[0]
+    recipe = RECIPE_DATABASE.get(best_match["name"])
+
+    if recipe:
+        st.success(f"### Önerim: {best_match['name']}")
+        col1, col2 = st.columns(2)
+        col1.metric("Süre", recipe["time"])
+        col2.metric("Kalori", recipe["cal"])
+        
+        st.write(f"**Açıklama:** {recipe['desc']}")
+        
+        st.subheader("🛒 Malzemeler")
+        for i in recipe["ing"]: st.write(f"- {i}")
+        
+        st.subheader("👨‍🍳 Hazırlanışı")
+        for idx, step in enumerate(recipe["steps"], 1): st.write(f"{idx}. {step}")
+        
+        st.info(f"💡 **Şefin İpucu:** {recipe['tips']}")
+
+    if st.button("Baştan Başla"):
+        st.session_state.step = 0
+        st.session_state.answers = {}
+        st.rerun()
